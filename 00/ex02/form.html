@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>My form</title>
+    <!-- defer = Only execute once full html page is loaded -->
+    <script src="popup.js" defer></script>
+</head>
+<body>
+    <h1>This is a formal form</h1>
+    <form>
+        <div>
+            <label>Firstname</label>
+            <input type="text" id="firstname" name="firtname"></input>
+        </div>
+        <div>
+            <label>Name</label>
+            <input type="text" id="name" name="name"></input>
+        </div>
+        <div>
+            <label>Age</label>
+            <input type="number" id="age" name="age" value="18"></input>
+        </div>
+        <div>
+            <label>Phone</label>
+            <input type="phone" id="phone" name="phone" pattern="[0-9]{10}" placeholder="0401020304"></input>
+        </div>
+        <div>
+            <label>Email</label>
+            <input type="email" id="email" name="email" placeholder="example@provider.com"></input>
+        </div>
+        <div>
+            <label>Student at 42?</label>
+            <input type="checkbox" id="student" name="student" value="Student at 42"></input>
+        </div>
+        <div>
+            <label>Gender</label>
+            <input type="radio" id="gender_male" name="gender" value="Male"></input>
+            <!-- This kind of label makes screen reading better -->
+            <label for="male">Male</label>
+            <input type="radio" id="gender_female" name="gender" value="Female"></input>
+            <label for="female">Female</label>
+            <input type="radio" id="gender_other" name="gender" value="Other" checked></input>
+            <label for="other">Other</label>
+        </div>
+        <button onclick="displayFormContents()">Submit</button>
+    </form>
+</body>
+</html>
