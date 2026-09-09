@@ -26,6 +26,9 @@ def capital_city(state: str):
         return
 
     capital = capital_cities.get(short_state, None)
+    if capital is None:
+        print("Unknown state")
+        return
     print(capital)
 
 
