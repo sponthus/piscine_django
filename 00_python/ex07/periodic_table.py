@@ -49,7 +49,12 @@ def parse_data(data: list[str]) -> dict[str, dict[str, str]]:
     return elements
 
 
-def append_tab(base: str, addition: str, tab_level: int, tag: str):
+def append_tab(
+        base: str,
+        addition: str,
+        tab_level: int,
+        tag: str,
+        same_line: bool = False):
     """Splits the addition per line and adds line with tabulations."""
     split_addition: list[str] = addition.split("\n")
     tabs: str = "\t" * tab_level
@@ -57,10 +62,13 @@ def append_tab(base: str, addition: str, tab_level: int, tag: str):
     for line in split_addition:
         if not line:
             continue
-        base += "\n"
-        base += tabs
+        if not same_line:
+            base += "\n"
+            base += tabs
         base += line
-    base += f"\n</{tag}>"
+    if not same_line:
+        base += "\n"
+    base += f"</{tag}>"
     return base
 
 def get_table(headers: list[str], elements: list[str]):
