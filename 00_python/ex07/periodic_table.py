@@ -76,32 +76,51 @@ def append_tab(
     base += f"</{tag}>"
     return base
 
-def get_table(headers: list[str], elements: list[str]):
-    """Creates a html table element, using given headers and elements"""
+
+def get_table(headers: list[str], elements: list[list[str]]):
+    """
+    Creates a html table element, using given headers and elements.
+    
+    Expected format:
+    - headers as a list of str
+        -> Each one will be represented in a <th>, contained in global <tr>
+    - elements as list of lists (rows)
+        -> Each one will open a <tr>
+    - rows as a list of str
+        -> Each one will be represented in a <td>
+    """
     if not isinstance(elements, list):
         raise AssertionError("elements should be a list")
     if not isinstance(headers, list):
         raise AssertionError("headers should be a list")
-    res = "<table>"
+    res = ""
+    table_content = ""
 
     # Add headers
     str_headers = ""
     for header in headers:
         if not isinstance(header, str):
             raise AssertionError("header should be a str")
-        str_headers += f"\t<th>{header}</th>\n"
+        str_headers = append_tab(str_headers, header, 0, tag="th", same_line=True)
 
-    res = append_tab(res, str_headers, 1, tag="tr")
+    table_content = append_tab(table_content, str_headers, 1, tag="tr")
 
-    # Add items - TODO not functional because adds only 1 line
+    # Add items
     str_items = ""
-    for items in elements:
-        if not isinstance(items, str):
-            raise AssertionError("element should be a str")
-        str_items += f"\t<td>{items}</td>\n"
+    for row in elements:
+        str_item = ""
+        if not isinstance(row, list):
+            raise AssertionError("row should be a list")
+        for element in row:
+            if not isinstance(element, str):
+                raise AssertionError("element should be a str")
+            str_item = append_tab(str_item, element, 1, tag="td", same_line=True)
+        str_items = append_tab(str_items, str_item, 1, tag="tr")
 
-    res = append_tab(res, str_items, 1, tag="tr")
-    res += "\n</table>"
+    table_content += "\n"
+    table_content += str_items
+
+    res = append_tab(res, table_content, tab_level=1, tag="table")
     return res
 
 class html:
