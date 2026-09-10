@@ -9,6 +9,11 @@ def read_file(path: str, sep: str) -> list:
         return list_content
 
 
+def write_file(path: str, content: str):
+    with open(path, mode="x") as file:
+        file.write(content)
+
+
 def parse_data(data: list[str]) -> dict[str, dict[str, str]]:
     """From raw data, translates into an info dict.
     
@@ -130,10 +135,12 @@ def format_html(data: dict[str, dict[str, str]]) -> str:
     file = html()
     file.set_title("Periodic table")
 
-    # print(file.get_html())
-    # headers = ["a", "b", "c"]
-    # elements = ["1", "2", "3"]
-    # print(get_table(headers, elements))
+    headers = ["a", "b", "c"]
+    elements = [["1", "2", "3"], ["1", "2", "3"]]
+    table = get_table(headers, elements)
+    file.add_to_body(table)
+
+    return file.get_html()
 
 
 if __name__ == '__main__':
@@ -142,7 +149,7 @@ if __name__ == '__main__':
         # print(data)
         data_dict = parse_data(data)
         # print(data_dict)
-        format_html(data_dict)
-
+        html_res = format_html(data_dict)
+        write_file("periodic_table.html", content=html_res)
     except Exception as e:
         print("Error:", e)
