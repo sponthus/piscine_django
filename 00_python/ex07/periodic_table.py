@@ -1,7 +1,7 @@
 import sys
 
 
-def read_file(path: str, sep: str) -> list:
+def read_file(path: str, sep: str) -> list[str]:
     """Reads a file and renders a list using given sep."""
     with open(path, mode="r") as file:
         content: str = file.read()
@@ -9,9 +9,18 @@ def read_file(path: str, sep: str) -> list:
         return list_content
 
 
-def write_file(path: str, content: str):
-    with open(path, mode="x") as file:
+def write_file(path: str, content: str) -> None:
+    with open(path, mode="w") as file:
         file.write(content)
+
+
+def require_str_list(values: list[str], label: str) -> None:
+    """Type checking for a list[str]. Raises TypeError."""
+    if not isinstance(values, list):
+        raise TypeError(f"{label} should be a list")
+    for v in values:
+        if not isinstance(v, str):
+            raise TypeError(f"{label} items should be str")
 
 
 def parse_data(data: list[str]) -> dict[str, dict[str, str]]:
@@ -54,27 +63,17 @@ def parse_data(data: list[str]) -> dict[str, dict[str, str]]:
     return elements
 
 
-def append_tab(
-        base: str,
-        addition: str,
-        tab_level: int,
-        tag: str,
-        same_line: bool = False):
-    """Splits the addition per line and adds line with tabulations."""
-    split_addition: list[str] = addition.split("\n")
-    tabs: str = "\t" * tab_level
-    base += f"\n<{tag}>"
-    for line in split_addition:
-        if not line:
-            continue
-        if not same_line:
-            base += "\n"
-            base += tabs
-        base += line
-    if not same_line:
-        base += "\n"
-    base += f"</{tag}>"
-    return base
+def render_tag(
+        name: str,
+        content: str,
+        indent: int = 0,
+        inline: bool = False) -> str:
+    if inline:
+        return f"\n<{name}>{content}</{name}>"
+    pad = "\t" * indent
+    lines = [line for line in content.splitlines() if line]
+    inner = "\n".join(f"{pad}{line}" for line in lines)
+    return f"\n<{name}>\n{inner}\n</{name}>"
 
 
 def get_table(headers: list[str], elements: list[list[str]]):
@@ -89,39 +88,18 @@ def get_table(headers: list[str], elements: list[list[str]]):
     - rows as a list of str
         -> Each one will be represented in a <td>
     """
+    require_str_list(headers, "headers")
     if not isinstance(elements, list):
         raise TypeError("elements should be a list")
-    if not isinstance(headers, list):
-        raise TypeError("headers should be a list")
-    res = ""
-    table_content = ""
 
-    # Add headers
-    str_headers = ""
-    for header in headers:
-        if not isinstance(header, str):
-            raise ValueError("header should be a str")
-        str_headers = append_tab(str_headers, header, 0, tag="th", same_line=True)
+    header_row = render_tag("tr", "".join(render_tag("th", h, inline=True) for h in headers), indent=1)
 
-    table_content = append_tab(table_content, str_headers, 1, tag="tr")
-
-    # Add items
-    str_items = ""
+    rows = []
     for row in elements:
-        str_item = ""
-        if not isinstance(row, list):
-            raise TypeError("row should be a list")
-        for element in row:
-            if not isinstance(element, str):
-                raise TypeError("element should be a str")
-            str_item = append_tab(str_item, element, 1, tag="td", same_line=True)
-        str_items = append_tab(str_items, str_item, 1, tag="tr")
+        require_str_list(row, "row")
+        rows.append(render_tag("tr", "".join(render_tag("td", cell, inline=True) for cell in row), indent=1))
 
-    table_content += "\n"
-    table_content += str_items
-
-    res = append_tab(res, table_content, tab_level=1, tag="table")
-    return res
+    return render_tag("table", "\n".join([header_row, *rows]), indent=1)
 
 
 class Element:
@@ -138,17 +116,14 @@ class Element:
         self.attributes = attributes.copy()
         del self.attributes["position"]
 
-    def get_name_html(self, tag: str) -> str:
-        return append_tab("", self.name, tab_level=0, tag=tag, same_line=True)
-
-    def get_attributes_list(self) -> str:
+    def get_attributes_html_list(self) -> str:
         attr_dict = {
             "number": "Nº",
             "small": "",
             "molar": "Mass: ",
             "electron": "e²: "
         }
-        li_elements = ""
+        items: list[str] = []
         for attribute, value in self.attributes.items():
             if not isinstance(attribute, str):
                 raise TypeError("attribute should be a str")
@@ -156,16 +131,16 @@ class Element:
                 raise TypeError("value should be a str")
             attribute_translated = attr_dict.get(attribute, attribute)
             str_attribute = f"{attribute_translated}{value}"
-            li_elements = append_tab(li_elements, str_attribute, tab_level=0, tag="li", same_line=True)
-        return append_tab("", li_elements, tab_level=1, tag="ul")
+            items.append(render_tag("li", str_attribute, inline=True))
+
+        return render_tag("ul", "\n".join(items), indent=1)
 
     def get_div(self) -> str:
-        res = ""
-        content = ""
-        content += self.get_name_html(tag="h4")
-        content += "\n"
-        content += self.get_attributes_list()
-        return append_tab(res, content, tab_level=1, tag="div")
+        content = "\n".join([
+            render_tag("h4", self.name, indent=0, inline=True),
+            self.get_attributes_html_list()
+        ])
+        return render_tag("div", content, indent=1)
 
 
 class Html:
@@ -181,19 +156,22 @@ class Html:
         self.body += addition
 
     def get_html(self):
-        base = """<!DOCTYPE html>
-<html lang="en">
-<encoding="utf-8">
-<head>
-\t<meta charset="utf-8">"""
+        head_lines = [
+            '<meta charset="utf-8">'
+        ]
         if self.title:
-            base += "\n\t<title>"
-            base += self.title
-            base += "</title>"
-        base += "\n</head>"
-        base = append_tab(base, self.body, 1, tag="body")
-        base += "\n</html>"
-        return base
+            head_lines.append(f"\t<title>{self.title}</title>")
+        head_html = render_tag("head", "\n".join(head_lines), indent=1)
+
+        body_html = render_tag("body", self.body, indent=1)
+
+        return "\n".join([
+            "<!DOCTYPE html>",
+            '<html lang="en">',
+            head_html,
+            body_html,
+            "</html>",
+        ])
 
 
 def format_html(data: dict[str, dict[str, str]]) -> str:
