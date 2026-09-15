@@ -65,6 +65,85 @@ def parse_data(data: list[str]) -> dict[str, dict[str, str]]:
     return elements
 
 
+def build_stylesheet() -> str:
+    return """
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 1rem;
+    font-family: Arial, sans-serif;
+    background: #f7f7f7;
+    color: #222;
+}
+
+h1, h2, h3 {
+    text-align: center;
+    margin: 0.4rem 0;
+}
+
+table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 85%;
+    margin: 1rem auto;
+    background: white;
+}
+
+th, td {
+    border: 1px solid #555;
+    padding: 0.35rem;
+    vertical-align: top;
+    text-align: center;
+}
+
+th {
+    background: #2f2f2f;
+    color: #fff;
+    font-weight: 600;
+}
+
+td > div {
+    min-height: 72px;
+}
+
+td h4 {
+    margin: 0 0 0.3rem 0;
+    font-size: 0.95rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+td ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.8rem;
+}
+
+.pos-0  { background: #48757a; }
+.pos-1  { background: #a05050; }
+.pos-2  { background: #936b99; }
+.pos-3  { background: #936b99; }
+.pos-4  { background: #936b99; }
+.pos-5  { background: #936b99; }
+.pos-6  { background: #936b99; }
+.pos-7  { background: #936b99; }
+.pos-8  { background: #936b99; }
+.pos-9  { background: #936b99; }
+.pos-10 { background: #936b99; }
+.pos-11 { background: #936b99; }
+.pos-12 { background: #48757a; }
+.pos-13 { background: #48757a; }
+.pos-14 { background: #48757a; }
+.pos-15 { background: #48757a; }
+.pos-16 { background: #48757a; }
+.pos-17 { background: #a05050; }
+"""
+
+
 def render_tag(
         name: str,
         content: str,
@@ -177,7 +256,7 @@ class Html:
     def get_html(self) -> str:
         head_lines = [
             '<meta charset="utf-8">',
-            '<link rel="stylesheet" href="style.css">'
+            '<link rel="stylesheet" href="periodic_table.css">'
         ]
         if self.title:
             head_lines.append(f"<title>{self.title}</title>")
@@ -262,5 +341,7 @@ if __name__ == '__main__':
         # print(data_dict)
         html_res = format_html(data_dict)
         write_file("periodic_table.html", content=html_res)
+        stylesheet = build_stylesheet()
+        write_file("periodic_table.css", content=stylesheet)
     except Exception as e:
         print("Error:", e)
