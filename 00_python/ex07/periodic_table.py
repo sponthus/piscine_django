@@ -123,6 +123,48 @@ def get_table(headers: list[str], elements: list[list[str]]):
     res = append_tab(res, table_content, tab_level=1, tag="table")
     return res
 
+
+class element:
+    def __init__(self, element_name: str, attributes: dict[str, str]):
+        if not isinstance(element_name, str):
+            raise AssertionError("element_name should be a str")
+        if not isinstance(attributes, dict):
+            raise AssertionError("element_data should be a dict")
+        self.name = element_name
+        pos_str = attributes.get("position", None)
+        if pos_str is None:
+            raise AssertionError("Missing position on an element")
+        self.pos = int(pos_str)
+        self.attributes = attributes
+        del self.attributes["position"]
+
+    def get_name_html(self, tag: str) -> str:
+        return append_tab("", self.name, tab_level=0, tag=tag, same_line=True)
+
+    def get_attributes_list(self) -> str:
+        attr_dict = {
+            "number": "Nº",
+            "small": "",
+            "molar": "Mass: ",
+            "electron": "e²: "
+        }
+        li_elements = ""
+        for attribute, value in self.attributes.items():
+            attribute_translated = attr_dict.get(attribute, attribute)
+            # TODO: Secure types
+            str_attribute = f"{attribute_translated}{value}"
+            li_elements = append_tab(li_elements, str_attribute, tab_level=0, tag="li", same_line=True)
+        return append_tab("", li_elements, tab_level=1, tag="ul")
+
+    def get_div(self) -> str:
+        res = ""
+        content = ""
+        content += self.get_name_html(tag="h4")
+        content += "\n"
+        content += self.get_attributes_list()
+        return append_tab(res, content, tab_level=1, tag="div")
+
+
 class html:
     def __init__(self):
         self.title = "My page"
