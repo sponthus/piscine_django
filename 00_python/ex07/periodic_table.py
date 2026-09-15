@@ -196,8 +196,23 @@ def format_html(data: dict[str, dict[str, str]]) -> str:
     file = html()
     file.set_title("Periodic table")
 
-    headers = ["a", "b", "c"]
-    elements = [["1", "2", "3"], ["1", "2", "3"]]
+    headers: list = [str(i) for i in range(18)]
+    elements: list = []
+    for row in range(7):
+        elements.append([])
+        for _ in range(18):
+            elements[row].append("<div></div>")
+
+    last_pos = -1
+    row = 0
+    for name, attributes in data.items():
+        element_object = element(name, attributes)
+        pos = element_object.pos
+        if last_pos >= pos:
+            row += 1
+        elements[row][pos] = element_object.get_div()
+        last_pos = pos
+
     table = get_table(headers, elements)
     file.add_to_body(table)
 
