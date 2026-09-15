@@ -69,14 +69,14 @@ def render_tag(
         indent: int = 0,
         inline: bool = False) -> str:
     if inline:
-        return f"\n<{name}>{content}</{name}>"
+        return f"<{name}>{content}</{name}>"
     pad = "\t" * indent
     lines = [line for line in content.splitlines() if line]
     inner = "\n".join(f"{pad}{line}" for line in lines)
-    return f"\n<{name}>\n{inner}\n</{name}>"
+    return f"<{name}>\n{inner}\n</{name}>"
 
 
-def get_table(headers: list[str], elements: list[list[str]]):
+def get_table(headers: list[str], elements: list[list[str]]) -> str:
     """
     Creates a html table element, using given headers and elements.
     
@@ -92,12 +92,12 @@ def get_table(headers: list[str], elements: list[list[str]]):
     if not isinstance(elements, list):
         raise TypeError("elements should be a list")
 
-    header_row = render_tag("tr", "".join(render_tag("th", h, inline=True) for h in headers), indent=1)
+    header_row = render_tag("tr", "\n".join(render_tag("th", h, inline=True) for h in headers), indent=1)
 
     rows = []
     for row in elements:
         require_str_list(row, "row")
-        rows.append(render_tag("tr", "".join(render_tag("td", cell, inline=True) for cell in row), indent=1))
+        rows.append(render_tag("tr", "\n".join(render_tag("td", cell, inline=True) for cell in row), indent=1))
 
     return render_tag("table", "\n".join([header_row, *rows]), indent=1)
 
@@ -124,6 +124,7 @@ class Element:
             "electron": "e²: "
         }
         items: list[str] = []
+        print(self.attributes)
         for attribute, value in self.attributes.items():
             if not isinstance(attribute, str):
                 raise TypeError("attribute should be a str")
@@ -148,19 +149,20 @@ class Html:
         self.title = "My page"
         self.body = ""
 
-    def set_title(self, title: str):
+    def set_title(self, title: str) -> None:
         self.title = title
 
-    def add_to_body(self, addition: str):
-        self.body += "\n"
+    def add_to_body(self, addition: str) -> None:
+        if self.body:
+            self.body += "\n"
         self.body += addition
 
-    def get_html(self):
+    def get_html(self) -> str:
         head_lines = [
             '<meta charset="utf-8">'
         ]
         if self.title:
-            head_lines.append(f"\t<title>{self.title}</title>")
+            head_lines.append(f"<title>{self.title}</title>")
         head_html = render_tag("head", "\n".join(head_lines), indent=1)
 
         body_html = render_tag("body", self.body, indent=1)
@@ -174,21 +176,30 @@ class Html:
         ])
 
 
+def build_empty_grid(rows: int, cols: int, empty_content: str) -> list[list]:
+    result: list = []
+    for row in range(rows):
+        result.append([])
+        for _ in range(cols):
+            result[row].append(empty_content)
+    return result
+
+
 def format_html(data: dict[str, dict[str, str]]) -> str:
     """
     Builds the html to render periodic table from given data.
 
     Uses each element's position to position them in columns.
     """
-    file = Html()
-    file.set_title("Periodic table")
+    page = Html()
+    page.set_title("Periodic table")
 
     headers: list = [str(i) for i in range(18)]
-    elements: list = []
-    for row in range(7):
-        elements.append([])
-        for _ in range(18):
-            elements[row].append("<div></div>")
+    elements: list[list] = build_empty_grid(
+        rows=7,
+        cols=18,
+        empty_content="<div></div>"
+    )
 
     last_pos = -1
     row = 0
@@ -201,9 +212,9 @@ def format_html(data: dict[str, dict[str, str]]) -> str:
         last_pos = pos
 
     table = get_table(headers, elements)
-    file.add_to_body(table)
+    page.add_to_body(table)
 
-    return file.get_html()
+    return page.get_html()
 
 
 if __name__ == '__main__':
