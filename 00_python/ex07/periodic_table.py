@@ -59,6 +59,8 @@ def parse_data(data: list[str]) -> dict[str, dict[str, str]]:
             info_value = split_info[1].strip()
             infos_dict[info_name] = info_value
 
+        if elements.get(name, None):
+            raise ValueError("double element in periodic_table.txt")
         elements[name] = infos_dict
     return elements
 
@@ -67,13 +69,18 @@ def render_tag(
         name: str,
         content: str,
         indent: int = 0,
-        inline: bool = False) -> str:
+        inline: bool = False,
+        style_class: str = "") -> str:
+    if style_class:
+        open_tag = f'{name} class="{style_class}"'
+    else:
+        open_tag = name
     if inline:
-        return f"<{name}>{content}</{name}>"
+        return f"<{open_tag}>{content}</{name}>"
     pad = "\t" * indent
     lines = [line for line in content.splitlines() if line]
     inner = "\n".join(f"{pad}{line}" for line in lines)
-    return f"<{name}>\n{inner}\n</{name}>"
+    return f"<{open_tag}>\n{inner}\n</{name}>"
 
 
 def get_table(headers: list[str], elements: list[list[str]]) -> str:
@@ -138,10 +145,20 @@ class Element:
 
     def get_div(self) -> str:
         content = "\n".join([
-            render_tag("h4", self.name, indent=0, inline=True),
+            render_tag(
+                "h4",
+                self.name,
+                indent=0,
+                inline=True,
+                style_class=f"pos-{self.pos}"
+            ),
             self.get_attributes_html_list()
         ])
-        return render_tag("div", content, indent=1)
+        return render_tag(
+            "div",
+            content,
+            indent=1,
+        )
 
 
 class Html:
@@ -159,7 +176,8 @@ class Html:
 
     def get_html(self) -> str:
         head_lines = [
-            '<meta charset="utf-8">'
+            '<meta charset="utf-8">',
+            '<link rel="stylesheet" href="style.css">'
         ]
         if self.title:
             head_lines.append(f"<title>{self.title}</title>")
