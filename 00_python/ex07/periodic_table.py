@@ -36,7 +36,7 @@ def parse_data(data: list[str]) -> dict[str, dict[str, str]]:
             continue
         element_split = element.split("=")
         if len(element_split) != 2:
-            raise AssertionError("Wrong format for element info, expected Name = infos")
+            raise ValueError("Wrong format for element info, expected Name = infos")
         name = element_split[0].strip()
         infos = element_split[1]
 
@@ -45,7 +45,7 @@ def parse_data(data: list[str]) -> dict[str, dict[str, str]]:
         for info in split_infos:
             split_info = info.split(":")
             if len(split_info) != 2:
-                raise AssertionError("Wrong format for element info, expected 'info: value'")
+                raise ValueError("Wrong format for element info, expected 'info: value'")
             info_name = split_info[0].strip()
             info_value = split_info[1].strip()
             infos_dict[info_name] = info_value
@@ -90,9 +90,9 @@ def get_table(headers: list[str], elements: list[list[str]]):
         -> Each one will be represented in a <td>
     """
     if not isinstance(elements, list):
-        raise AssertionError("elements should be a list")
+        raise TypeError("elements should be a list")
     if not isinstance(headers, list):
-        raise AssertionError("headers should be a list")
+        raise TypeError("headers should be a list")
     res = ""
     table_content = ""
 
@@ -100,7 +100,7 @@ def get_table(headers: list[str], elements: list[list[str]]):
     str_headers = ""
     for header in headers:
         if not isinstance(header, str):
-            raise AssertionError("header should be a str")
+            raise ValueError("header should be a str")
         str_headers = append_tab(str_headers, header, 0, tag="th", same_line=True)
 
     table_content = append_tab(table_content, str_headers, 1, tag="tr")
@@ -110,10 +110,10 @@ def get_table(headers: list[str], elements: list[list[str]]):
     for row in elements:
         str_item = ""
         if not isinstance(row, list):
-            raise AssertionError("row should be a list")
+            raise TypeError("row should be a list")
         for element in row:
             if not isinstance(element, str):
-                raise AssertionError("element should be a str")
+                raise TypeError("element should be a str")
             str_item = append_tab(str_item, element, 1, tag="td", same_line=True)
         str_items = append_tab(str_items, str_item, 1, tag="tr")
 
@@ -127,13 +127,13 @@ def get_table(headers: list[str], elements: list[list[str]]):
 class element:
     def __init__(self, element_name: str, attributes: dict[str, str]):
         if not isinstance(element_name, str):
-            raise AssertionError("element_name should be a str")
+            raise TypeError("element_name should be a str")
         if not isinstance(attributes, dict):
-            raise AssertionError("element_data should be a dict")
+            raise TypeError("element_data should be a dict")
         self.name = element_name
         pos_str = attributes.get("position", None)
         if pos_str is None:
-            raise AssertionError("Missing position on an element")
+            raise ValueError("Missing position on an element")
         self.pos = int(pos_str)
         self.attributes = attributes.copy()
         del self.attributes["position"]
@@ -150,8 +150,11 @@ class element:
         }
         li_elements = ""
         for attribute, value in self.attributes.items():
+            if not isinstance(attribute, str):
+                raise TypeError("attribute should be a str")
+            if not isinstance(value, str):
+                raise TypeError("value should be a str")
             attribute_translated = attr_dict.get(attribute, attribute)
-            # TODO: Secure types
             str_attribute = f"{attribute_translated}{value}"
             li_elements = append_tab(li_elements, str_attribute, tab_level=0, tag="li", same_line=True)
         return append_tab("", li_elements, tab_level=1, tag="ul")
