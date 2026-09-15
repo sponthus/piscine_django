@@ -194,6 +194,25 @@ def format_html(data: dict[str, dict[str, str]]) -> str:
     page = Html()
     page.set_title("Periodic table")
 
+    page.add_to_body(render_tag(
+        name="h1",
+        content="Periodic table of elements",
+        indent=0,
+        inline=True
+    ))
+    page.add_to_body(render_tag(
+        name="h2",
+        content="by sponthus",
+        indent=0,
+        inline=True
+    ))
+    page.add_to_body(render_tag(
+        name="h3",
+        content="Non-contractual representation",
+        indent=0,
+        inline=True
+    ))
+
     headers: list = [str(i) for i in range(18)]
     elements: list[list] = build_empty_grid(
         rows=7,
