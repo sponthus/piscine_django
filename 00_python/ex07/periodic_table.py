@@ -135,7 +135,7 @@ class element:
         if pos_str is None:
             raise AssertionError("Missing position on an element")
         self.pos = int(pos_str)
-        self.attributes = attributes
+        self.attributes = attributes.copy()
         del self.attributes["position"]
 
     def get_name_html(self, tag: str) -> str:
