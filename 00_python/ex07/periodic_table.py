@@ -183,6 +183,7 @@ class html:
     def get_html(self):
         base = """<!DOCTYPE html>
 <html lang="en">
+<encoding="utf-8">
 <head>
 \t<meta charset="utf-8">"""
         if self.title:
