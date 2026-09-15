@@ -124,7 +124,7 @@ def get_table(headers: list[str], elements: list[list[str]]):
     return res
 
 
-class element:
+class Element:
     def __init__(self, element_name: str, attributes: dict[str, str]):
         if not isinstance(element_name, str):
             raise TypeError("element_name should be a str")
@@ -168,7 +168,7 @@ class element:
         return append_tab(res, content, tab_level=1, tag="div")
 
 
-class html:
+class Html:
     def __init__(self):
         self.title = "My page"
         self.body = ""
@@ -197,7 +197,12 @@ class html:
 
 
 def format_html(data: dict[str, dict[str, str]]) -> str:
-    file = html()
+    """
+    Builds the html to render periodic table from given data.
+
+    Uses each element's position to position them in columns.
+    """
+    file = Html()
     file.set_title("Periodic table")
 
     headers: list = [str(i) for i in range(18)]
@@ -210,7 +215,7 @@ def format_html(data: dict[str, dict[str, str]]) -> str:
     last_pos = -1
     row = 0
     for name, attributes in data.items():
-        element_object = element(name, attributes)
+        element_object = Element(name, attributes)
         pos = element_object.pos
         if last_pos >= pos:
             row += 1
